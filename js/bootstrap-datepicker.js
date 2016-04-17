@@ -154,6 +154,7 @@
 		this.setDaysOfWeekDisabled(this.o.daysOfWeekDisabled);
 		this.setDaysOfWeekHighlighted(this.o.daysOfWeekHighlighted);
 		this.setDatesDisabled(this.o.datesDisabled);
+    this.setDatesHighlighted(this.o.datesHighlighted);
 
 		this.fillDow();
 		this.fillMonths();
@@ -290,6 +291,16 @@
 				o.datesDisabled = datesDisabled;
 			}
 			o.datesDisabled = $.map(o.datesDisabled,function(d){
+				return DPGlobal.parseDate(d, format, o.language, o.assumeNearbyYear);
+			});
+
+			o.datesHighlighted = o.datesHighlighted||[];
+			if (!$.isArray(o.datesHighlighted)) {
+				var datesHighlighted = [];
+        datesHighlighted.push(DPGlobal.parseDate(o.datesHighlighted, format, o.language, o.assumeNearbyYear));
+				o.datesHighlighted = datesHighlighted;
+			}
+			o.datesHighlighted = $.map(o.datesHighlighted,function(d){
 				return DPGlobal.parseDate(d, format, o.language, o.assumeNearbyYear);
 			});
 
@@ -694,6 +705,12 @@
 			this.updateNavArrows();
 		},
 
+    setDatesHighlighted: function(datesHighlighted){
+      this._process_options({datesHighlighted: datesHighlighted});
+      this.update();
+      this.updateNavArrows();
+    },
+
 		place: function(){
 			if (this.isInline)
 				return this;
@@ -913,6 +930,9 @@
 			if (this.dateIsDisabled(date)){
 				cls.push('disabled', 'disabled-date');
 			}
+      if (this.dateIsHighlighted(date)){
+        cls.push('highlighted');
+      }
 			if ($.inArray(date.getUTCDay(), this.o.daysOfWeekHighlighted) !== -1){
 				cls.push('highlighted');
 			}
@@ -1485,6 +1505,14 @@
 		dateWithinRange: function(date){
 			return date >= this.o.startDate && date <= this.o.endDate;
 		},
+
+    dateIsHighlighted: function(date){
+      return (
+        $.grep(this.o.datesHighlighted, function(d){
+          return isUTCEquals(date, d);
+        }).length > 0
+      );
+    },
 
 		keydown: function(e){
 			if (!this.picker.is(':visible')){
